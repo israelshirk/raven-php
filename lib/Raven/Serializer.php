@@ -32,11 +32,17 @@ class Raven_Serializer
      */
     public function serialize($value, $max_depth=3, $_depth=0)
     {
+        $usage = memory_get_usage(true);
+
         if (is_object($value) || is_resource($value)) {
             return $this->serializeValue($value);
         } elseif ($_depth < $max_depth && is_array($value)) {
             $new = array();
             foreach ($value as $k => $v) {
+                if (memory_get_usage(true) - $usage > 1024*1024*20) {
+                    break;
+                }
+
                 $new[$this->serializeValue($k)] = $this->serialize($v, $max_depth, $_depth + 1);
             }
 

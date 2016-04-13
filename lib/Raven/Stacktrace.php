@@ -91,12 +91,22 @@ class Raven_Stacktrace
             if (!empty($vars)) {
                 $cleanVars = array();
                 foreach ($vars as $key => $value) {
+                    if (preg_match('#(^_ci|^this$)#', $key)) {
+                        $value = '[excluded due to match]';
+                    }
+
+                    if (is_array($value) && count($value) > 100) {
+                        $value = '[big array]';
+                        continue;
+                    }
+
                     if (is_string($value) || is_numeric($value)) {
                         $cleanVars[$key] = substr($value, 0, $frame_var_limit);
                     } else {
                         $cleanVars[$key] = $value;
                     }
                 }
+
                 $data['vars'] = $cleanVars;
             }
 
@@ -174,10 +184,25 @@ class Raven_Stacktrace
         foreach ($frame['args'] as $i => $arg) {
             if (isset($params[$i])) {
                 // Assign the argument by the parameter name
+                if (is_object($arg) && stristr(get_class($arg), 'CI_')) {
+                    $arg = '[CI class]';
+                } else {
+                    $arg = (array)$arg;
+                }
+
                 if (is_array($arg)) {
-                    foreach ($arg as $key => $value) {
-                        if (is_string($value) || is_numeric($value)) {
-                            $arg[$key] = substr($value, 0, $frame_arg_limit);
+                    if (count($arg) > 50) {
+                        $arg = '[big array]';
+                        continue;
+                    } else {
+                        foreach ($arg as $key => $value) {
+                            if (preg_match('#(^_ci|^this$)#', $key)) {
+                                $arg[$key] = '[excluded]';
+                            } elseif (is_array($value)) {
+                                $arg[$key] = '[big array]';
+                            } elseif (is_string($value) || is_numeric($value)) {
+                                $arg[$key] = substr($value, 0, $frame_arg_limit);
+                            }
                         }
                     }
                 }

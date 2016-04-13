@@ -80,9 +80,30 @@ class Raven_SanitizeDataProcessor extends Raven_Processor
         }
     }
 
+    protected function array_walk_recursive(&$data, $callback, $depth = 0)
+    {
+        if (is_array($data)) {
+            if (count($data) > 100) {
+                $keys = array_keys($data);
+                $data = array_slice($data, 0, 100);
+                $data = array_intersect_key($data, array_flip($keys));
+            }
+
+            foreach ($data as $key => $value) {
+                if (is_array($value)) {
+                    $this->array_walk_recursive($value, $callback);
+                } else {
+                    call_user_func_array($callback, array($data, $key));
+                }
+            }
+        } else {
+            call_user_func_array($callback, array($data, null));
+        }
+    }
+
     public function process(&$data)
     {
-        array_walk_recursive($data, array($this, 'sanitize'));
+        $this->array_walk_recursive($data, array($this, 'sanitize'));
         $this->sanitizeHttp($data);
     }
 
