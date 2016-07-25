@@ -30,7 +30,7 @@ class Raven_Serializer
      * Serialize an object (recursively) into something safe for data
      * sanitization and encoding.
      */
-    public function serialize($value, $max_depth=3, $_depth=0)
+    public function serialize($value, $max_depth=12, $_depth=0)
     {
         $usage = memory_get_usage(true);
 
