@@ -82,6 +82,10 @@ class Raven_SanitizeDataProcessor extends Raven_Processor
 
     protected function array_walk_recursive(&$data, $callback, $depth = 0)
     {
+        if ($depth > 10) {
+            call_user_func_array($callback, array('depth limited', null));
+        }
+
         if (is_array($data)) {
             if (count($data) > 100) {
                 $keys = array_keys($data);
@@ -91,7 +95,7 @@ class Raven_SanitizeDataProcessor extends Raven_Processor
 
             foreach ($data as $key => $value) {
                 if (is_array($value)) {
-                    $this->array_walk_recursive($value, $callback);
+                    $this->array_walk_recursive($value, $callback, $depth + 1);
                 } else {
                     call_user_func_array($callback, array($data, $key));
                 }

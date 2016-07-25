@@ -300,7 +300,7 @@ class Raven_Client
                 $data['level'] = self::ERROR;
             }
         }
-f_var_dump(compact('data', 'trace', 'vars'));
+
         return $this->capture($data, $trace, $vars);
     }
 
