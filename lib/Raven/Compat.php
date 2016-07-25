@@ -70,7 +70,7 @@ class Raven_Compat
     public static function json_encode($value, $options=0)
     {
         if (function_exists('json_encode')) {
-            return json_encode($value);
+            return json_encode($value, 0, 7);
         }
 
         return self::_json_encode($value);
