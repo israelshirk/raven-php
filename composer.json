@@ -1,5 +1,5 @@
 {
-    "name": "sentry/sentry",
+    "name": "raven/raven",
     "type": "library",
     "description": "A PHP client for Sentry (http://getsentry.com)",
     "keywords": ["log", "logging"],
@@ -12,48 +12,24 @@
         }
     ],
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^1.8.0",
-        "phpunit/phpunit": "^4.8.35 || ^5.7",
-        "monolog/monolog": "*"
+        "fabpot/php-cs-fixer": "^1.8.0",
+        "phpunit/phpunit": "^4.6.6"
     },
     "require": {
-        "php": "^5.3|^7.0",
+        "php": ">=5.2.4",
         "ext-curl": "*"
     },
-    "suggest": {
-        "ext-hash": "*",
-        "ext-json": "*",
-        "ext-mbstring": "*",
-        "monolog/monolog": "Automatically capture Monolog events as breadcrumbs"
-    },
-    "conflict": {
-        "raven/raven": "*"
-    },
     "bin": [
-        "bin/sentry"
+        "bin/raven"
     ],
     "autoload": {
         "psr-0" : {
             "Raven_" : "lib/"
         }
     },
-    "scripts": {
-        "tests": [
-            "vendor/bin/phpunit --verbose"
-        ],
-        "tests-travis": [
-            "vendor/bin/phpunit --verbose --configuration phpunit.xml --coverage-clover test/clover.xml"
-        ],
-        "tests-report": [
-            "vendor/bin/phpunit --verbose --configuration phpunit.xml --coverage-html test/html-report"
-        ],
-        "phpcs": [
-            "vendor/bin/php-cs-fixer fix --config-file=.php_cs --verbose --diff --dry-run"
-        ]
-    },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.10.x-dev"
+            "dev-master": "0.14.x-dev"
         }
     }
 }

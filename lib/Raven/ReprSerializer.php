@@ -10,7 +10,7 @@
  */
 
 /**
- * Serializes a value into a representation that should reasonably suggest
+ * Serializes a value into a representation that should reasonable suggest
  * both the type and value, and be serializable into JSON.
  * @package raven
  */
@@ -35,7 +35,13 @@ class Raven_ReprSerializer extends Raven_Serializer
         } elseif (is_array($value)) {
             return 'Array of length ' . count($value);
         } else {
-            return $this->serializeString($value);
+            $value = (string) $value;
+
+            if (function_exists('mb_convert_encoding')) {
+                $value = mb_convert_encoding($value, 'UTF-8', 'auto');
+            }
+
+            return $value;
         }
     }
 }
