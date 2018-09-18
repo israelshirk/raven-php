@@ -21,13 +21,11 @@ function raven_cli_test($command, $args)
 
 function cmd_test($dsn)
 {
-    if (empty($dsn)) {
-        exit('ERROR: Missing DSN value');
-    }
-
     // Parse DSN as a test
     try {
-        $parsed = Raven_Client::parseDSN($dsn);
+        if (empty(Raven_Client::parseDSN($dsn))) {
+            exit('ERROR: Missing DSN value');
+        }
     } catch (InvalidArgumentException $ex) {
         exit("ERROR: There was an error parsing your DSN:\n  " . $ex->getMessage());
     }
@@ -35,10 +33,12 @@ function cmd_test($dsn)
     $client = new Raven_Client($dsn, array(
         'trace' => true,
         'curl_method' => 'sync',
+        'app_path' => realpath(__DIR__ . '/..'),
+        'base_path' => realpath(__DIR__ . '/..'),
     ));
 
     $config = get_object_vars($client);
-    $required_keys = array('server', 'project', 'public_key', 'secret_key');
+    $required_keys = array('server', 'project', 'public_key');
 
     echo "Client configuration:\n";
     foreach ($required_keys as $key) {
@@ -74,6 +74,10 @@ function cmd_test($dsn)
 function main() {
     global $argv;
 
+    if (!isset($argv[1])) {
+        exit('Usage: sentry test <dsn>');
+    }
+
     $cmd = $argv[1];
 
     switch ($cmd) {
@@ -81,7 +85,7 @@ function main() {
             cmd_test(@$argv[2]);
             break;
         default:
-            exit('Usage: raven test <dsn>');
+            exit('Usage: sentry test <dsn>');
     }
 }
 

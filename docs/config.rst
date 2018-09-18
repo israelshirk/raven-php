@@ -32,6 +32,12 @@ The following settings are available for the client:
             'php_version' => phpversion(),
         )
 
+    .. code-block:: php
+
+        $client->tags_context(array(
+            'php_version' => phpversion(),
+        ));
+
 .. describe:: release
 
     The version of your application (e.g. git SHA)
@@ -40,6 +46,10 @@ The following settings are available for the client:
 
         'release' => MyApp::getReleaseVersion(),
 
+    .. code-block:: php
+
+        $client->setRelease(MyApp::getReleaseVersion());
+
 .. describe:: environment
 
     The environment your application is running in.
@@ -47,6 +57,84 @@ The following settings are available for the client:
     .. code-block:: php
 
         'environment' => 'production',
+
+    .. code-block:: php
+
+        $client->setEnvironment('production');
+
+.. describe:: app_path
+
+    The root path to your application code.
+
+    .. code-block:: php
+
+        'app_path' => app_root(),
+
+    .. code-block:: php
+
+        $client->setAppPath(app_root());
+
+.. describe:: excluded_app_paths
+
+    Paths to exclude from app_path detection.
+
+    .. code-block:: php
+
+        'excluded_app_paths' => array(app_root() . '/cache'),
+
+    .. code-block:: php
+
+        $client->setExcludedAppPaths(array(app_root() . '/cache'));
+
+.. describe:: prefixes
+
+    Prefixes which should be stripped from filenames to create relative
+    paths.
+
+    .. code-block:: php
+
+        'prefixes' => array(
+            '/www/php/lib',
+        ),
+
+    .. code-block:: php
+
+        $client->setPrefixes(array(
+            '/www/php/lib',
+        ));
+
+.. describe:: sample_rate
+
+    The sampling factor to apply to events. A value of 0.00 will deny sending
+    any events, and a value of 1.00 will send 100% of events.
+
+    .. code-block:: php
+
+        // send 50% of events
+        'sample_rate' => 0.5,
+
+.. describe:: send_callback
+
+    A function which will be called whenever data is ready to be sent. Within
+    the function you can mutate the data, or alternatively return ``false`` to
+    instruct the SDK to not send the event.
+
+    .. code-block:: php
+
+        'send_callback' => function($data) {
+            // strip HTTP data
+            @unset($data['request']);
+        },
+
+    .. code-block:: php
+
+        $client->setSendCallback(function($data) {
+            // dont send events if POST
+            if ($_SERVER['REQUEST_METHOD'] === 'POST')
+            {
+                return false;
+            }
+        });
 
 .. describe:: curl_method
 
@@ -66,6 +154,30 @@ The following settings are available for the client:
 
     Specify the path to the curl binary to be used with the 'exec' curl
     method.
+
+.. describe:: transport
+
+    Set a custom transport to override how Sentry events are sent upstream.
+
+    .. code-block:: php
+
+        'transport' => function($client, $data) {
+            $myHttpClient->send(array(
+                'url'     => $client->getServerEndpoint(),
+                'method'  => 'POST',
+                'headers' => array(
+                    'Content-Encoding' => 'gzip',
+                    'Content-Type'     => 'application/octet-stream',
+                    'User-Agent'       => $client->getUserAgent(),
+                    'X-Sentry-Auth'    => $client->getAuthHeader(),
+                ),
+                'body'    => gzcompress(jsonEncode($data)),
+            ))
+        },
+
+    .. code-block:: php
+
+        $client->setTransport(...);
 
 .. describe:: trace
 
@@ -109,7 +221,7 @@ The following settings are available for the client:
 .. describe:: processors
 
     An array of classes to use to process data before it is sent to
-    Sentry. By default, ``Raven_SanitizeDataProcessor`` is used
+    Sentry. By default, ``Raven_Processor_SanitizeDataProcessor`` is used
 
 .. describe:: processorOptions
 
@@ -118,18 +230,49 @@ The following settings are available for the client:
     the list of processors used by ``Raven_Client``
 
     An example of overriding the regular expressions in
-    ``Raven_SanitizeDataProcessor`` is below:
+    ``Raven_Processor_SanitizeDataProcessor`` is below:
 
     .. code-block:: php
 
         'processorOptions' => array(
-            'Raven_SanitizeDataProcessor' => array(
+            'Raven_Processor_SanitizeDataProcessor' => array(
                         'fields_re' => '/(user_password|user_token|user_secret)/i',
                         'values_re' => '/^(?:\d[ -]*?){15,16}$/'
                     )
         )
 
-.. _raven-php-request-context:
+.. describe:: timeout
+
+    The timeout for sending requests to the Sentry server in seconds, default is 2 seconds.
+
+    .. code-block:: php
+
+        'timeout' => 2,
+
+.. describe:: excluded_exceptions
+
+    Exception that should not be reported, exceptions extending exceptions in this list will also
+    be excluded, default is an empty array.
+
+    In the example below, when you exclude ``LogicException`` you will also exclude ``BadFunctionCallException``
+    since it extends ``LogicException``.
+
+    .. code-block:: php
+
+        'excluded_exceptions' => array('LogicException'),
+
+.. describe:: ignore_server_port
+
+    By default the server port will be added to the logged URL when it is a non
+    standard port (80, 443).
+    Setting this to ``true`` will ignore the server port altogether and will
+    result in the server port never getting appended to the logged URL.
+
+    .. code-block:: php
+
+        'ignore_server_port' => true,
+
+.. _sentry-php-request-context:
 
 Providing Request Context
 -------------------------
@@ -162,3 +305,46 @@ need to ensure you cleanup the context (to reset its state):
 .. code-block:: php
 
     $client->context->clear();
+    
+Processors
+----------
+
+The following processors are available bundled with sentry-php. They can be used in ``processors`` configuration, and configured through ``processorOptions`` as described above.
+
+.. describe:: Raven_Processor_SanitizeDataProcessor
+
+    This is the default processor. It replaces fields or values with asterisks
+    in frames, http, and basic extra data.
+   
+   Available options:
+   
+   - ``fields_re``: takes a regex expression of fields to sanitize
+     Defaults to ``/(authorization|password|passwd|secret|password_confirmation|card_number|auth_pw)/i``
+   - ``values_re``: takes a regex expression of values to sanitize
+     Defaults to ``/^(?:\d[ -]*?){13,16}$/``
+
+.. describe:: Raven_Processor_SanitizeHttpHeadersProcessor
+
+   This processor sanitizes the configured HTTP headers to ensure no sensitive
+   information is sent to the server.
+   
+   Available options:
+   
+   - ``sanitize_http_headers``: takes an array of headers to sanitize. 
+     Defaults to ``['Authorization', 'Proxy-Authorization', 'X-Csrf-Token', 'X-CSRFToken', 'X-XSRF-TOKEN']``
+
+.. describe:: Raven_Processor_SanitizeStacktraceProcessor
+
+   This processor removes the `pre_context`, `context_line` and `post_context`
+   information from all exceptions captured by an event.
+
+.. describe:: Raven_Processor_RemoveHttpBodyProcessor
+
+   This processor removes all the data of the HTTP body to ensure no sensitive
+   information is sent to the server in case the request method is POST, PUT,
+   PATCH or DELETE.
+ 
+.. describe:: Raven_Processor_RemoveCookiesProcessor
+ 
+   This processor removes all the cookies from the request to ensure no sensitive
+   information is sent to the server.

@@ -1,11 +1,14 @@
 Monolog
 =======
 
+Capturing Errors
+----------------
+
 Monolog supports Sentry out of the box, so you'll just need to configure a handler:
 
 .. sourcecode:: php
 
-    $client = new Raven_Client('___DSN___');
+    $client = new Raven_Client('___PUBLIC_DSN___');
 
     $handler = new Monolog\Handler\RavenHandler($client);
     $handler->setFormatter(new Monolog\Formatter\LineFormatter("%message% %context% %extra%\n"));
@@ -22,7 +25,7 @@ Capturing context can be done via a monolog processor:
     $monolog->pushProcessor(function ($record) {
         // record the current user
         $user = Acme::getCurrentUser();
-        $record['user'] = array(
+        $record['context']['user'] = array(
             'name' => $user->getName(),
             'username' => $user->getUsername(),
             'email' => $user->getEmail(),
@@ -36,3 +39,16 @@ Capturing context can be done via a monolog processor:
 
         return $record;
     });
+
+
+Breadcrumbs
+-----------
+
+Sentry provides a breadcrumb handler to automatically send logs along as crumbs:
+
+.. sourcecode:: php
+
+    $client = new Raven_Client('___PUBLIC_DSN___');
+
+    $handler = new \Raven_Breadcrumbs_MonologHandler($client);
+    $monolog->pushHandler($handler);

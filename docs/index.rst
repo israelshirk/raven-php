@@ -1,7 +1,7 @@
 .. sentry:edition:: self
 
-   Raven-PHP
-   =========
+   Sentry-PHP
+   ==========
 
 .. sentry:edition:: on-premise, hosted
 
@@ -10,7 +10,7 @@
     PHP
     ===
 
-Raven-PHP is a PHP client for Sentry supporting PHP 5.3 or higher.  It'a
+The PHP SDK for Sentry supports PHP 5.3 and higher.  It's
 available as a BSD licensed Open Source library.
 
 Installation
@@ -19,12 +19,12 @@ Installation
 There are various ways to install the PHP integration for Sentry.  The
 recommended way is to use `Composer <http://getcomposer.org/>`__::
 
-    $ composer require "raven/raven"
+    $ composer require "sentry/sentry"
 
 Alternatively you can manually install it:
 
-1.  Download and extract the latest `raven-php
-    <https://github.com/getsentry/raven-php/archive/master.zip>`__ archive
+1.  Download and extract the latest `sentry-php
+    <https://github.com/getsentry/sentry-php/archive/master.zip>`__ archive
     to your PHP project.
 2.  Require the autoloader in your application:
 
@@ -32,8 +32,6 @@ Alternatively you can manually install it:
 
         require_once '/path/to/Raven/library/Raven/Autoloader.php';
         Raven_Autoloader::register();
-
-For more methods have a look at :ref:`raven-php-advanced-installation`.
 
 Configuration
 -------------
@@ -43,7 +41,7 @@ once and reference it from anywhere you want to interface with Sentry:
 
 .. code-block:: php
 
-    $client = new Raven_Client('___DSN___');
+    $client = new Raven_Client('___PUBLIC_DSN___');
 
 Once you have the client you can either use it manually or enable the
 automatic error and exception capturing which is recomended:
@@ -70,7 +68,7 @@ automatically with all events.  For instance you can use the
         'email' => $USER->getEmail()
     ));
 
-For more information see :ref:`raven-php-request-context`.
+For more information see :ref:`sentry-php-request-context`.
 
 Deep Dive
 ---------
@@ -81,12 +79,11 @@ Want more?  Have a look at the full documentation for more information.
    :maxdepth: 2
    :titlesonly:
 
-   advanced
    usage
    config
    integrations/index
 
 Resources:
 
-* `Bug Tracker <http://github.com/getsentry/raven-php/issues>`_
-* `Github Project <http://github.com/getsentry/raven-php>`_
+* `Bug Tracker <http://github.com/getsentry/sentry-php/issues>`_
+* `Github Project <http://github.com/getsentry/sentry-php>`_
